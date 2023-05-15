@@ -69,7 +69,14 @@ class User {
    * [{username, first_name, last_name}, ...] */
 
   static async all() {
-    
+    const result = await db.query(
+      `SELECT username,
+       first_name,
+       last_name
+       FROM users
+       ORDER BY username`
+    )
+    return result.rows;
   }
 
   /** Get: get user by username
@@ -81,7 +88,24 @@ class User {
    *          join_at,
    *          last_login_at } */
 
-  static async get(username) {}
+  static async get(username) {
+    const result = await db.query(
+      `SELECT username,
+       first_name,
+       last_name,
+       phone,
+       join_at,
+       last_login_at
+       FROM users
+       WHERE username = $1
+       `,[username]
+    )
+    const user = result.rows[0];
+
+    if (!user) throw new NotFoundError(`No such username: ${username}`);
+
+    return user;
+  }
 
   /** Return messages from this user.
    *
@@ -91,7 +115,42 @@ class User {
    *   {username, first_name, last_name, phone}
    */
 
-  static async messagesFrom(username) {}
+  static async messagesFrom(username) {
+
+    const result = await db.query(
+          `SELECT m.id,
+          m.to_username,
+          m.body,
+          m.sent_at,
+          m.read_at,
+          t.username,
+          t.first_name AS to_first_name,
+          t.last_name AS to_last_name,
+          t.phone AS to_phone,
+    FROM messages AS m
+      JOIN users AS f ON m.from_username = f.username
+      JOIN users AS t ON m.to_username = t.username
+    WHERE f.username = $1`,[username]
+    );
+    let messages = result.rows;
+
+    if (!messages) throw new NotFoundError(`No message found for: ${username}`);
+
+    return result.map(m => ({
+      id: m.id,
+      to_user: {
+        username: m.username,
+        first_name: m.to_first_name,
+        last_name: m.to_last_name,
+        phone: m.to_phone,
+      },
+      body: m.body,
+      sent_at: m.sent_at,
+      read_at: m.read_at,
+    }));
+  }
+}
+
 
   /** Return messages to this user.
    *
