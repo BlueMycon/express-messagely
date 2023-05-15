@@ -57,8 +57,6 @@ class User {
     const user = result.rows[0];
 
     if (!user) throw new NotFoundError(`No such user: ${username}`);
-
-    return user;
   }
 
   /** All: basic info on all users:
@@ -93,8 +91,7 @@ class User {
               join_at,
               last_login_at
        FROM users
-       WHERE username = $1
-       `,
+       WHERE username = $1`,
       [username]
     );
     const user = result.rows[0];
@@ -128,8 +125,6 @@ class User {
       [username]
     );
     let messages = result.rows;
-
-    if (!messages) throw new NotFoundError(`No messages found for ${username}`);
 
     return messages.map(m => ({
       id: m.id,
@@ -169,8 +164,6 @@ class User {
       [username]
     );
     let messages = result.rows;
-
-    if (!messages) throw new NotFoundError(`No messages found for ${username}`);
 
     return messages.map(m => ({
       id: m.id,
