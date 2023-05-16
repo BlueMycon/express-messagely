@@ -1,9 +1,13 @@
 "use strict";
 
 const Router = require("express").Router;
-const router = new Router();
 const Message = require("../models/message");
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, UnauthorizedError } = require("../expressError");
+const { ensureLoggedIn } = require("../middleware/auth");
+
+const router = new Router();
+
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -16,8 +20,14 @@ const { BadRequestError } = require("../expressError");
  * Makes sure that the currently-logged-in users is either the to or from user.
  *
  **/
-router.get("/:id",  ensureLoggedIn, async function (req, res, next) {
+router.get("/:id", async function (req, res, next) {
   const message = await Message.get(req.params.id);
+  const currentUser = res.locals.user;
+
+  if (message.from_user.username != currentUser.username && message.to_user.username != currentUser.username) {
+    throw new UnauthorizedError("You do not have permission to view this message.");
+  }
+
   return res.json({ message });
 });
 
@@ -28,17 +38,14 @@ router.get("/:id",  ensureLoggedIn, async function (req, res, next) {
  *   {message: {id, from_username, to_username, body, sent_at}}
  *
  **/
-router.post("/", async function (req, res, next) {
+router.post("/", ensureLoggedIn, async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
   const from_username = res.locals.user.username;
-
   const { to_username, body } = req.body;
   const message = await Message.create({ from_username, to_username, body });
-  // message = {message: {id, from_username, to_username, body, sent_at}}
+  
   return res.json({ message });
-
-
 });
 
 /** POST/:id/read - mark message as read:
@@ -51,13 +58,14 @@ router.post("/", async function (req, res, next) {
 router.post("/:id/read", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
-  const { id } = req.params;
+  const message = await Message.markRead(req.params.id);
+  const currentUser = res.locals.user
 
-  const message = await Message.markRead({ id });
+  if (message.to_user != currentUser) {
+    throw new UnauthorizedError("You are not the recipient of this message.");
+  }
 
   return res.json({ message });
-
-
 });
 
 

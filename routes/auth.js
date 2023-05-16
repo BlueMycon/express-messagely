@@ -10,13 +10,14 @@ const router = new Router();
 
 
 /** POST /login: {username, password} => {token} */
-router.post("/login-1", async function (req, res, next) {
+router.post("/login", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
   const { username, password } = req.body;
 
-  if (User.authenticate(username, password)) {
+  if (await User.authenticate(username, password)) {
     const token = jwt.sign({ username }, SECRET_KEY);
+    // TODO: update login timestamp
     return res.json({ token });
   }
 
@@ -31,16 +32,9 @@ router.post("/register", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
   const data = req.body;
-
-  // TODO: validate json data?
-  // if (!isValid(data)) {
-  //   throw new BadRequestError();
-  // }
-
-  const user = User.register(data)
-
-  // TODO: do we want hashed password on user when we sign token?
-  const token = jwt.sign({ user }, SECRET_KEY);
+  const { username } = await User.register(data);
+  const token = jwt.sign({ username }, SECRET_KEY);
+  
   return res.json({ token });
 });
 

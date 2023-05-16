@@ -23,6 +23,19 @@ CREATE TABLE messages (
   sent_at TIMESTAMP WITH TIME ZONE NOT NULL,
   read_at TIMESTAMP WITH TIME ZONE);
 
+INSERT INTO users (username, password, first_name, last_name, phone, join_at, last_login_at)
+VALUES
+('tuckerdiane', '$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe', 'tucker', 'diane', '555-555-5555', CURRENT_TIMESTAMP, NULL),
+('scottsteven', '$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe', 'scott', 'steven', '555-555-5555', CURRENT_TIMESTAMP, NULL),
+('tannerjennifer', '$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe', 'tanner', 'jennifer', '555-555-5555', CURRENT_TIMESTAMP, NULL),
+('arellanoelizabeth', '$2b$12$Q1PUFjhN/AWRQ21LbGYvjeLpZZB6lfZ1BPwifHALGO6oIbyC3CmJe', 'arellano', 'elizabeth', '555-555-5555', CURRENT_TIMESTAMP, NULL);
+
+INSERT INTO messages (from_username, to_username, body, sent_at, read_at)
+VALUES
+('tuckerdiane', 'scottsteven', 'hey scott, how are you doing?', CURRENT_TIMESTAMP, NULL),
+('scottsteven', 'tannerjennifer', 'hey tanner, how are you doing?', CURRENT_TIMESTAMP, NULL),
+('tannerjennifer', 'arellanoelizabeth', 'hey arellano, how are you doing?', CURRENT_TIMESTAMP, NULL);
+
 
 \echo 'Delete and recreate messagely_test db?'
 \prompt 'Return for yes or control-C to cancel > ' foo
