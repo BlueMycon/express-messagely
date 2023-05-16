@@ -7,7 +7,6 @@ const { ensureLoggedIn } = require("../middleware/auth");
 
 const router = new Router();
 
-
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -24,13 +23,17 @@ router.get("/:id", async function (req, res, next) {
   const message = await Message.get(req.params.id);
   const currentUser = res.locals.user;
 
-  if (message.from_user.username != currentUser.username && message.to_user.username != currentUser.username) {
-    throw new UnauthorizedError("You do not have permission to view this message.");
+  if (
+    message.from_user.username != currentUser.username &&
+    message.to_user.username != currentUser.username
+  ) {
+    throw new UnauthorizedError(
+      "You do not have permission to view this message."
+    );
   }
 
   return res.json({ message });
 });
-
 
 /** POST / - post message.
  *
@@ -44,7 +47,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const from_username = res.locals.user.username;
   const { to_username, body } = req.body;
   const message = await Message.create({ from_username, to_username, body });
-  
+
   return res.json({ message });
 });
 
@@ -58,15 +61,15 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 router.post("/:id/read", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
 
-  const message = await Message.markRead(req.params.id);
-  const currentUser = res.locals.user
+  const message = await Message.get(req.params.id);
+  const currentUser = res.locals.user;
 
-  if (message.to_user != currentUser) {
+  if (message.to_user.username != currentUser.username) {
     throw new UnauthorizedError("You are not the recipient of this message.");
   }
 
-  return res.json({ message });
+  const msg = await Message.markRead(req.params.id);
+  return res.json({ message: msg });
 });
-
 
 module.exports = router;

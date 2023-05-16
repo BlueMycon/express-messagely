@@ -8,7 +8,6 @@ const { BadRequestError, UnauthorizedError } = require("../expressError");
 
 const router = new Router();
 
-
 /** POST /login: {username, password} => {token} */
 router.post("/login", async function (req, res, next) {
   if (req.body === undefined) throw new BadRequestError();
