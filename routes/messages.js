@@ -47,7 +47,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const from_username = res.locals.user.username;
   const { to_username, body } = req.body;
   const message = await Message.create({ from_username, to_username, body });
-
+  Message.alert(from_username);
   return res.json({ message });
 });
 
